@@ -5,11 +5,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/apurva304/virtualpingpong/referee"
-
-	"github.com/apurva304/virtualpingpong/game"
-
 	"github.com/apurva304/virtualpingpong/domain"
+	"github.com/apurva304/virtualpingpong/pingpong/game"
+	ref "github.com/apurva304/virtualpingpong/pingpong/referee"
 )
 
 var (
@@ -57,11 +55,13 @@ var (
 )
 
 func main() {
+	var referee domain.Referee
+
 	rand.Seed(time.Now().UnixNano())
 	t := time.Now()
 
 	game := game.NewGame()
-	referee := referee.NewReferee(game)
+	referee = ref.NewReferee(game)
 
 	for _, pd := range pds {
 		referee.RegisterPlayer(pd)

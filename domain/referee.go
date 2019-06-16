@@ -3,7 +3,7 @@ package domain
 type Referee interface {
 	RegisterPlayer(pd PlayerDetail)
 	StartChampainShip() (err error)
-	ListGamesScore(fsb []FinalScoreBoard, champain PlayerDetail, err error)
+	ListGamesScore() (fsb []FinalScoreBoard, champain PlayerDetail, err error)
 }
 
 type FinalScoreBoard struct {
