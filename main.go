@@ -5,64 +5,79 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/apurva304/virtualpingpong/domain"
 	"github.com/apurva304/virtualpingpong/referee"
+
+	"github.com/apurva304/virtualpingpong/game"
+
+	"github.com/apurva304/virtualpingpong/domain"
+)
+
+var (
+	pds = []domain.PlayerDetail{
+		domain.PlayerDetail{
+			Name:            "Joey",
+			DefenceArrayLen: 7,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Monica",
+			DefenceArrayLen: 6,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Chandler",
+			DefenceArrayLen: 6,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Ross",
+			DefenceArrayLen: 5,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Phoebe",
+			DefenceArrayLen: 5,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Rachel",
+			DefenceArrayLen: 6,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Sachin",
+			DefenceArrayLen: 4,
+		},
+
+		domain.PlayerDetail{
+			Name:            "Rohan",
+			DefenceArrayLen: 5,
+		},
+	}
 )
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	ref := referee.Referee{CurrentRound: 1}
+	t := time.Now()
 
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#1",
-		Name:            "Joey",
-		DefenceArrayLen: 7,
-	})
+	game := game.NewGame()
+	referee := referee.NewReferee(game)
 
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#2",
-		Name:            "Monica",
-		DefenceArrayLen: 6,
-	})
+	for _, pd := range pds {
+		referee.RegisterPlayer(pd)
+	}
 
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#3",
-		Name:            "Chandler",
-		DefenceArrayLen: 6,
-	})
+	referee.StartChampainShip()
 
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#4",
-		Name:            "Ross",
-		DefenceArrayLen: 5,
-	})
+	fsb, champ, err := referee.ListGamesScore()
+	if err != nil {
+		panic(err)
+	}
 
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#5",
-		Name:            "Phoebe",
-		DefenceArrayLen: 5,
-	})
-
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#6",
-		Name:            "Rachel",
-		DefenceArrayLen: 6,
-	})
-
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#7",
-		Name:            "Sachin",
-		DefenceArrayLen: 4,
-	})
-
-	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
-		Id:              "#8",
-		Name:            "Rohan",
-		DefenceArrayLen: 5,
-	})
-
-	ref.FirstRound()
-	ref.SecondRound()
-	ref.FinalRound()
-	fmt.Println(ref.Champian)
+	fmt.Println("game", "round", "winner", "winner's Points", "RunnerUp", "RunnerUp's Points")
+	for i, f := range fsb {
+		fmt.Println(i+1, f.Round, f.WinnerName, f.WinnerPoints, f.RunnerUpName, f.RunnerUpPoints)
+	}
+	fmt.Println("\nChampain of the Game is ", champ.Name, "\n")
+	fmt.Println("Time taken ", time.Since(t))
 }
