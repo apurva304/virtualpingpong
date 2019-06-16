@@ -2,66 +2,119 @@ package referee
 
 import (
 	"errors"
-	"strconv"
 
 	"github.com/apurva304/virtualpingpong/domain"
-	"github.com/apurva304/virtualpingpong/game"
 )
 
 var (
 	ErrRequiredPlayerNotRegistered = errors.New("Required Number of players not registered")
 	ErrPreviousRoundWinnerNotFound = errors.New("Previous Round winner not found")
+	ErrChampainShipNotCompleted    = errors.New("Champiainship Not Completed yet")
 )
 
-type Referee struct {
-	RegisteredPlayers []domain.PlayerDetail
-	GameScores        []game.GameScore
-	CurrentRound      int
-	Round1Winners     []game.Participent
-	Round2Winners     []game.Participent
-	Champian          domain.PlayerDetail
+type referee struct {
+	registeredPlayers []domain.PlayerDetail
+	gameScores        []domain.GameScore
+	currentRound      int
+	round1Winners     []domain.PlayerDetail
+	round2Winners     []domain.PlayerDetail
+	champian          domain.PlayerDetail
+	game              domain.Game
 }
 
-func (ref *Referee) FirstRound() (err error) {
-	if len(ref.RegisteredPlayers) < 8 {
+func NewReferee(game domain.Game) *referee {
+	return &referee{
+		game: game,
+	}
+}
+func (ref *referee) firstRound() (err error) {
+	if len(ref.registeredPlayers) < 8 {
 		return ErrRequiredPlayerNotRegistered
 	}
 
-	for i := 0; i < len(ref.RegisteredPlayers); i += 2 {
+	for i := 0; i < len(ref.registeredPlayers); i += 2 {
 
-		g := game.NewGame("#"+strconv.Itoa(i), ref.CurrentRound, ref.RegisteredPlayers[i], ref.RegisteredPlayers[i+1])
-		gs, w := g.Run()
-		ref.GameScores = append(ref.GameScores, gs)
-		ref.Round1Winners = append(ref.Round1Winners, w)
+		gs := ref.game.Run(ref.registeredPlayers[i], ref.registeredPlayers[i+1])
+		gs.Round = ref.currentRound
+		ref.gameScores = append(ref.gameScores, gs)
+		ref.round1Winners = append(ref.round1Winners, gs.Winner)
 	}
-	ref.CurrentRound += 1
+	ref.currentRound += 1
 	return
 }
 
-func (ref *Referee) SecondRound() (err error) {
-	if len(ref.Round1Winners) < 4 {
+func (ref *referee) secondRound() (err error) {
+	if len(ref.round1Winners) < 4 {
 		return ErrPreviousRoundWinnerNotFound
 	}
 
-	for i := 0; i < len(ref.Round1Winners); i += 2 {
-		g := game.NewGame("#"+strconv.Itoa(i+(len(ref.GameScores)/2)), ref.CurrentRound, ref.Round1Winners[i].PlayerDetail, ref.Round1Winners[i+1].PlayerDetail)
-		gs, w := g.Run()
-		ref.GameScores = append(ref.GameScores, gs)
-		ref.Round2Winners = append(ref.Round2Winners, w)
+	for i := 0; i < len(ref.round1Winners); i += 2 {
+		gs := ref.game.Run(ref.round1Winners[i], ref.round1Winners[i+1])
+		gs.Round = ref.currentRound
+		ref.gameScores = append(ref.gameScores, gs)
+		ref.round2Winners = append(ref.round2Winners, gs.Winner)
 	}
-	ref.CurrentRound += 1
+	ref.currentRound += 1
 	return
 }
-func (ref *Referee) FinalRound() (err error) {
-	if len(ref.Round2Winners) < 2 {
+func (ref *referee) finalRound() (err error) {
+	if len(ref.round2Winners) < 2 {
 		return ErrPreviousRoundWinnerNotFound
 	}
 
-	for i := 0; i < len(ref.Round2Winners); i += 2 {
-		g := game.NewGame("#"+strconv.Itoa(i+(len(ref.GameScores)/2)), ref.CurrentRound, ref.Round2Winners[i].PlayerDetail, ref.Round2Winners[i+1].PlayerDetail)
-		gs, w := g.Run()
-		ref.GameScores = append(ref.GameScores, gs)
-		ref.Champian = domain.PlayerDetail{w.Id, w.Name, w.DefenceArrayLen}
+	for i := 0; i < len(ref.round2Winners); i += 2 {
+		gs := ref.game.Run(ref.round2Winners[i], ref.round2Winners[i+1])
+		gs.Round = ref.currentRound
+		ref.gameScores = append(ref.gameScores, gs)
+		ref.champian = gs.Winner
 	}
+	ref.currentRound += 1
+	return
+}
+func (ref *referee) ListGamesScore() (fsb []domain.FinalScoreBoard, champain domain.PlayerDetail, err error) {
+	if ref.currentRound <= 3 {
+		err = ErrChampainShipNotCompleted
+		return
+	}
+
+	for _, gs := range ref.gameScores {
+		f := domain.FinalScoreBoard{
+			Round:          gs.Round,
+			WinnerName:     gs.Winner.Name,
+			WinnerPoints:   gs.WinnerPoint,
+			RunnerUpName:   gs.RunnerUp.Name,
+			RunnerUpPoints: gs.RunnerUpPoint,
+		}
+
+		fsb = append(fsb, f)
+	}
+	champain = ref.champian
+
+	return
+}
+
+func (ref *referee) RegisterPlayer(pd domain.PlayerDetail) {
+	ref.registeredPlayers = append(ref.registeredPlayers, pd)
+}
+
+func (ref *referee) StartChampainShip() (err error) {
+	if ref.currentRound == 0 {
+		ref.currentRound = 1
+	}
+	err = ref.firstRound()
+	if err != nil {
+		return
+	}
+
+	err = ref.secondRound()
+	if err != nil {
+		return
+	}
+
+	err = ref.finalRound()
+	if err != nil {
+		return
+	}
+
 	return
 }

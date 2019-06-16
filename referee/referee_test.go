@@ -4,57 +4,61 @@ import (
 	"testing"
 
 	"github.com/apurva304/virtualpingpong/domain"
+	"github.com/apurva304/virtualpingpong/game"
 )
 
 var (
-	ref = Referee{CurrentRound: 1,
-		RegisteredPlayers: []domain.PlayerDetail{
-			domain.PlayerDetail{
-				Id:              "#1",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#2",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#3",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#4",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#5",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#6",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#7",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
-			domain.PlayerDetail{
-				Id:              "#8",
-				Name:            "xyz",
-				DefenceArrayLen: 5,
-			},
+	ref = referee{currentRound: 1,
+		game: game.NewGame(),
+	}
+
+	pds = []domain.PlayerDetail{
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
+		},
+		domain.PlayerDetail{
+			Name:            "xyz",
+			DefenceArrayLen: 5,
 		},
 	}
 )
 
+func TestRegisterPlayer(t *testing.T) {
+	for _, pd := range pds {
+		ref.RegisterPlayer(pd)
+	}
+
+	if len(ref.registeredPlayers) != 8 {
+		t.Error("Expect 8 player to register")
+	}
+}
 func TestFirstRound(t *testing.T) {
-	err := ref.FirstRound()
+	err := ref.firstRound()
 	if err != nil && err != ErrRequiredPlayerNotRegistered {
 		t.Error(err)
 	}
@@ -63,17 +67,17 @@ func TestFirstRound(t *testing.T) {
 		return
 	}
 
-	if len(ref.Round1Winners) != 4 {
+	if len(ref.round1Winners) != 4 {
 		t.Error("Round 1 Winners not added")
 	}
 
-	if len(ref.GameScores) != 4 {
+	if len(ref.gameScores) != 4 {
 		t.Error("Game Score not added")
 	}
 }
 
 func TestSecondRound(t *testing.T) {
-	err := ref.SecondRound()
+	err := ref.secondRound()
 	if err != nil && err != ErrPreviousRoundWinnerNotFound {
 		t.Error(err)
 	}
@@ -82,17 +86,17 @@ func TestSecondRound(t *testing.T) {
 		return
 	}
 
-	if len(ref.Round2Winners) != 2 {
+	if len(ref.round2Winners) != 2 {
 		t.Error("Round 2 winners not added")
 	}
 
-	if len(ref.GameScores) != 6 {
+	if len(ref.gameScores) != 6 {
 		t.Error("Game Score not added")
 	}
 }
 
 func TestFinalRound(t *testing.T) {
-	err := ref.FinalRound()
+	err := ref.finalRound()
 	if err != nil && err != ErrPreviousRoundWinnerNotFound {
 		t.Error(err)
 	}
@@ -101,13 +105,29 @@ func TestFinalRound(t *testing.T) {
 		return
 	}
 
-	emptyPlayDetail := domain.PlayerDetail{}
+	emptyPlayerDetail := domain.PlayerDetail{}
 
-	if ref.Champian == emptyPlayDetail {
+	if ref.champian == emptyPlayerDetail {
 		t.Error("Champain not added")
 	}
 
-	if len(ref.GameScores) != 7 {
+	if len(ref.gameScores) != 7 {
 		t.Error("Game Score not added")
+	}
+}
+
+func TestListFinalScore(t *testing.T) {
+	fsb, champ, err := ref.ListGamesScore()
+	if err != nil && err != ErrChampainShipNotCompleted {
+		t.Error(err)
+	}
+
+	if len(fsb) != 7 {
+		t.Error("Expect Length of final Score board to be 7")
+	}
+
+	emptyPlayerDetail := domain.PlayerDetail{}
+	if champ == emptyPlayerDetail {
+		t.Error("Incorrect champain")
 	}
 }
