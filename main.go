@@ -12,7 +12,6 @@ import (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 	ref := referee.Referee{CurrentRound: 1}
-	t := time.Now()
 
 	ref.RegisteredPlayers = append(ref.RegisteredPlayers, domain.PlayerDetail{
 		Id:              "#1",
@@ -63,10 +62,7 @@ func main() {
 	})
 
 	ref.FirstRound()
-	fmt.Println(ref.Round1Winners)
 	ref.SecondRound()
-	fmt.Println(ref.Round2Winners)
 	ref.FinalRound()
 	fmt.Println(ref.Champian)
-	fmt.Println(time.Since(t))
 }

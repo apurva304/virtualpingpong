@@ -63,6 +63,5 @@ func (ref *Referee) FinalRound() (err error) {
 		ref.GameScores = append(ref.GameScores, gs)
 		ref.Champian = domain.PlayerDetail{w.Id, w.Name, w.DefenceArrayLen}
 	}
-	ref.CurrentRound += 1
 	return
 }
