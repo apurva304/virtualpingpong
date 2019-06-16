@@ -32,12 +32,12 @@ type GameScore struct {
 	WinnerName   string
 }
 
-func NewGame(id string, round int, oPlayer Participent, dPlayer Participent) *Game {
+func NewGame(id string, round int, oPlayer domain.PlayerDetail, dPlayer domain.PlayerDetail) *Game {
 	return &Game{
 		Id:      id,
 		Round:   round,
-		OPlayer: oPlayer,
-		DPlayer: dPlayer,
+		OPlayer: Participent{PlayerDetail: oPlayer},
+		DPlayer: Participent{PlayerDetail: dPlayer},
 	}
 }
 func (g *Game) Run() (gs GameScore, winner Participent) {
